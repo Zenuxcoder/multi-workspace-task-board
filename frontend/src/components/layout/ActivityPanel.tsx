@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
 import { useAppSelector } from '@/app/hooks';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { formatDistanceToNow } from '@/utils/date';
 import { Sparkles, MessageSquareDot, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ActivityPanelProps {
   open: boolean;
@@ -45,6 +47,15 @@ function getActivityBadgeStyle(message: string): { border: string; bg: string; t
 
 export default function ActivityPanel({ open, onClose }: ActivityPanelProps) {
   const events = useAppSelector((s) => s.activity.events);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setLoading(true);
+      const timer = setTimeout(() => setLoading(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
@@ -57,14 +68,23 @@ export default function ActivityPanel({ open, onClose }: ActivityPanelProps) {
         </SheetHeader>
         
         <div className="overflow-y-auto h-[calc(100vh-4.5rem)] px-4 py-3">
-          {events.length === 0 ? (
+          {loading ? (
+            <div className="space-y-3 mt-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-3.5 border border-slate-100 rounded-xl space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Skeleton className="h-4.5 w-16 rounded-full" />
+                    <Skeleton className="h-3 w-12 rounded-md" />
+                  </div>
+                  <Skeleton className="h-4 w-full rounded-md" />
+                </div>
+              ))}
+            </div>
+          ) : events.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center p-6 border border-dashed rounded-2xl bg-slate-50/50 mt-2">
               <HelpCircle className="h-8 w-8 text-slate-300 mb-2" />
               <p className="text-xs text-slate-400 font-semibold leading-normal">
-                No activity stream records yet.
-              </p>
-              <p className="text-[10px] text-slate-400 mt-1 max-w-[200px] leading-relaxed">
-                Task modifications will broadcast and append here instantly!
+                No recent activity.
               </p>
             </div>
           ) : (
