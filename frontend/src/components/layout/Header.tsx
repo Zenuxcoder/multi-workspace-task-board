@@ -12,8 +12,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { getWorkspaceTheme } from '@/utils/theme';
-import { LayoutDashboard, Menu, ChevronDown, Activity, LogOut, User, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Menu, ChevronDown, Activity, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface HeaderProps {
   workspaces: Workspace[];
@@ -21,6 +22,7 @@ interface HeaderProps {
   onWorkspaceChange: (id: string) => void;
   onToggleSidebar: () => void;
   onToggleActivity: () => void;
+  isLoading?: boolean;
 }
 
 export default function Header({
@@ -29,6 +31,7 @@ export default function Header({
   onWorkspaceChange,
   onToggleSidebar,
   onToggleActivity,
+  isLoading,
 }: HeaderProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -64,14 +67,17 @@ export default function Header({
       <div className="mx-2 h-6 w-px bg-slate-200 hidden sm:block" />
 
       {/* Switcher */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-lg border-slate-200 bg-white shadow-xs hover:bg-slate-50 transition-all font-medium">
-            <span className={cn("h-2.5 w-2.5 rounded-full bg-linear-to-tr shadow-xs transition-all duration-300", theme.gradient)} />
-            {activeWorkspace?.name ?? 'Workspace'}
-            <ChevronDown className="h-4 w-4 opacity-60" />
-          </Button>
-        </DropdownMenuTrigger>
+      {isLoading ? (
+        <Skeleton className="h-9 w-32 rounded-lg" />
+      ) : (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1.5 h-9 rounded-lg border-slate-200 bg-white shadow-xs hover:bg-slate-50 transition-all font-medium">
+              <span className={cn("h-2.5 w-2.5 rounded-full bg-linear-to-tr shadow-xs transition-all duration-300", theme.gradient)} />
+              {activeWorkspace?.name ?? 'Workspace'}
+              <ChevronDown className="h-4 w-4 opacity-60" />
+            </Button>
+          </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56 mt-1 rounded-xl shadow-lg border-slate-100 p-1 bg-white/95 backdrop-blur-md">
           <DropdownMenuLabel className="text-slate-400 text-xs font-semibold px-2.5 py-2 uppercase tracking-wider">
             Workspaces
@@ -98,6 +104,7 @@ export default function Header({
           })}
         </DropdownMenuContent>
       </DropdownMenu>
+      )}
 
       <div className="flex-1" />
 
