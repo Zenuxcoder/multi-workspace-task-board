@@ -9,7 +9,7 @@ export function useSocket() {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const socket = io('http://localhost:3001');
+    const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3001');
     socketRef.current = socket;
 
     socket.on('activity', (event: ActivityEvent) => {
