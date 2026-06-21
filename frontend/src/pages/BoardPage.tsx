@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   DndContext,
+  DragOverlay,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  closestCorners,
+  closestCenter,
+  defaultDropAnimationSideEffects,
 } from '@dnd-kit/core';
-import type { DragEndEvent } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import type { DragStartEvent, DragOverEvent, DragEndEvent, DropAnimation } from '@dnd-kit/core';
+import { sortableKeyboardCoordinates, arrayMove } from '@dnd-kit/sortable';
 import {
   useGetBoardQuery,
   useCreateTaskMutation,
@@ -18,6 +20,7 @@ import {
 } from '@/api/endpoints';
 import BoardColumn from '@/components/board/BoardColumn';
 import TaskDialog from '@/components/tasks/TaskDialog';
+import TaskCard from '@/components/board/TaskCard';
 import DeleteConfirmDialog from '@/components/tasks/DeleteConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -39,6 +42,17 @@ export default function BoardPage() {
   const [updateTask] = useUpdateTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
 
+  const [localTasks, setLocalTasks] = useState<Task[]>([]);
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
+
+  useEffect(() => {
+    if (data?.tasks) {
+      if (!activeTask) {
+        setLocalTasks(data.tasks);
+      }
+    }
+  }, [data?.tasks, activeTask]);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [targetStatus, setTargetStatus] = useState<TaskStatus>('todo');
@@ -56,6 +70,12 @@ export default function BoardPage() {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  const dropAnimation: DropAnimation = {
+    sideEffects: defaultDropAnimationSideEffects({ styles: { active: { opacity: '0.4' } } }),
+    duration: 250,
+    easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+  };
 
   if (!boardId) {
     return (
@@ -111,30 +131,91 @@ export default function BoardPage() {
     );
   }
 
-  const { board, tasks } = data;
+  const { board } = data;
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const task = localTasks.find((t) => t.id === active.id);
+    if (task) setActiveTask(task);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    if (activeId === overId) return;
+
+    // Must check if active element is a task
+    const isActiveTask = active.data.current?.sortable;
+    if (!isActiveTask) return;
+
+    const activeTaskIndex = localTasks.findIndex(t => t.id === activeId);
+    const overTaskIndex = localTasks.findIndex(t => t.id === overId);
+    const isOverColumn = COLUMNS.includes(overId as TaskStatus);
+
+    const activeTaskItem = localTasks[activeTaskIndex];
+    if (!activeTaskItem) return;
+
+    const overTaskItem = localTasks[overTaskIndex];
+    const targetStatus = isOverColumn ? (overId as TaskStatus) : overTaskItem?.status;
+
+    if (!targetStatus) return;
+
+    if (activeTaskItem.status !== targetStatus) {
+      // Cross column drag optimistic update
+      setLocalTasks((prev) => {
+        const newTasks = [...prev];
+        const task = newTasks[activeTaskIndex];
+        const updatedTask = { ...task, status: targetStatus };
+        newTasks.splice(activeTaskIndex, 1);
+        
+        let newIndex = overTaskIndex >= 0 ? overTaskIndex : newTasks.length;
+        if (isOverColumn) {
+          // If hovering over empty column dropzone
+          newIndex = newTasks.length;
+        }
+        
+        newTasks.splice(newIndex, 0, updatedTask);
+        return newTasks;
+      });
+    } else if (overTaskIndex >= 0 && activeTaskIndex !== overTaskIndex) {
+      // Same column reorder optimistic update
+      setLocalTasks((prev) => arrayMove(prev, activeTaskIndex, overTaskIndex));
+    }
+  };
 
   const handleDragEnd = async (event: DragEndEvent) => {
+    setActiveTask(null);
     const { active, over } = event;
     if (!over) return;
 
     const activeId = active.id as string;
-    const overId = over.id as string;
+    
+    // Calculate final position and status from localTasks
+    const activeTaskNow = localTasks.find(t => t.id === activeId);
+    if (!activeTaskNow) return;
 
-    const activeTask = tasks.find((t) => t.id === activeId);
-    if (!activeTask) return;
+    const columnTasks = localTasks.filter(t => t.status === activeTaskNow.status);
+    const targetPosition = columnTasks.findIndex(t => t.id === activeId);
 
-    const isOverColumn = COLUMNS.includes(overId as TaskStatus);
-    const targetStatus: TaskStatus = isOverColumn
-      ? (overId as TaskStatus)
-      : (tasks.find((t) => t.id === overId)?.status ?? activeTask.status);
+    // Find original task to check if we actually need to persist the change
+    const originalTask = data?.tasks.find(t => t.id === activeId);
+    if (!originalTask) return;
 
-    if (activeTask.status !== targetStatus) {
+    if (originalTask.status !== activeTaskNow.status || originalTask.position !== targetPosition) {
       await updateTask({
         id: activeId,
         boardId,
-        status: targetStatus,
+        status: activeTaskNow.status,
+        position: targetPosition,
       }).unwrap();
-      toast(`Task moved to ${STATUS_LABELS[targetStatus]}`, 'info');
+      
+      if (originalTask.status !== activeTaskNow.status) {
+        toast(`Task moved to ${STATUS_LABELS[activeTaskNow.status]}`, 'info');
+      }
     }
   };
 
@@ -150,7 +231,7 @@ export default function BoardPage() {
   };
 
   const handleDeleteTaskClick = (id: string) => {
-    const task = tasks.find((t) => t.id === id) || null;
+    const task = localTasks.find((t) => t.id === id) || null;
     setTaskToDelete(task);
     setDeleteDialogOpen(true);
   };
@@ -235,20 +316,29 @@ export default function BoardPage() {
         <div className={cn("absolute -top-32 -left-32 w-64 h-64 rounded-full blur-3xl opacity-10 bg-gradient-to-br", theme.gradient)} />
         <div className={cn("absolute -bottom-32 -right-32 w-64 h-64 rounded-full blur-3xl opacity-10 bg-gradient-to-br", theme.gradient)} />
 
-        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+        <DndContext 
+          sensors={sensors} 
+          collisionDetection={closestCenter} 
+          onDragStart={handleDragStart} 
+          onDragOver={handleDragOver} 
+          onDragEnd={handleDragEnd}
+        >
           <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 items-start select-none relative z-10 min-h-[480px] snap-x snap-mandatory md:snap-none">
             {COLUMNS.map((col) => (
               <BoardColumn
                 key={col}
                 status={col}
                 title={STATUS_LABELS[col]}
-                tasks={tasks.filter((t) => t.status === col)}
+                tasks={localTasks.filter((t) => t.status === col)}
                 onAddTask={handleAddTaskClick}
                 onEditTask={handleEditTaskClick}
                 onDeleteTask={handleDeleteTaskClick}
               />
             ))}
           </div>
+          <DragOverlay dropAnimation={dropAnimation}>
+            {activeTask ? <TaskCard task={activeTask} isOverlay /> : null}
+          </DragOverlay>
         </DndContext>
       </div>
 
@@ -269,3 +359,4 @@ export default function BoardPage() {
     </div>
   );
 }
+
