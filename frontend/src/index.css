@@ -157,6 +157,29 @@
   animation: horizontalSweep 18s ease-in-out infinite;
 }
 
+/* Toast slide-in animation */
+@keyframes slideInFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
+.animate-in {
+  animation: slideInFromBottom 0.3s ease-out;
+}
 
+/* Mobile board horizontal snap scrolling */
+@media (max-width: 768px) {
+  .snap-x {
+    scroll-snap-type: x mandatory;
+  }
+  .snap-mandatory > * {
+    scroll-snap-align: center;
+  }
+}
 
