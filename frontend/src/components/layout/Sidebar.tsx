@@ -35,10 +35,10 @@ function BoardList({ boards, activeBoardId, onClose, workspaceId }: BoardListPro
           onClick={onClose}
           className={({ isActive }) =>
             cn(
-              'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-250',
+              'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-all duration-250',
               isActive
-                ? `bg-linear-to-r ${theme.gradient} text-white shadow-md ${theme.glow}`
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                ? `bg-linear-to-r ${theme.gradient} text-white shadow-md ${theme.glow} font-bold border-l-[3px] border-white/40`
+                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-semibold'
             )
           }
         >
