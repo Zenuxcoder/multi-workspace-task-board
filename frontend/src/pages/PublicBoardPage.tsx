@@ -5,9 +5,10 @@ import BoardColumn from '@/components/board/BoardColumn';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COLUMNS, STATUS_LABELS } from '@/types';
-import { Share2, Check, ArrowLeft, LayoutDashboard, Sparkles } from 'lucide-react';
+import { Share2, Check, ArrowLeft, LayoutDashboard, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
 import { getWorkspaceTheme } from '@/utils/theme';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/toast';
 
 export default function PublicBoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
@@ -20,8 +21,9 @@ export default function PublicBoardPage() {
     );
   }
 
-  const { data, isLoading, isError } = useGetPublicBoardQuery(boardId);
+  const { data, isLoading, isError, refetch } = useGetPublicBoardQuery(boardId);
   const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (data?.board) {
@@ -71,18 +73,24 @@ export default function PublicBoardPage() {
   if (isError || !data) {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-center px-6 bg-slate-50/50">
-        <div className="h-12 w-12 rounded-xl bg-rose-50 flex items-center justify-center mb-3 text-rose-500">
-          <ArrowLeft className="h-6 w-6" />
+        <div className="h-14 w-14 rounded-2xl bg-rose-50 flex items-center justify-center mb-4">
+          <AlertCircle className="h-7 w-7 text-rose-500" />
         </div>
-        <h2 className="text-lg font-bold text-slate-800">Board not found</h2>
+        <h2 className="text-lg font-bold text-slate-800">Unable to load board</h2>
         <p className="text-sm text-slate-400 mt-1 max-w-xs font-medium">
-          This board might have been deleted, or the shareable link is invalid.
+          Something went wrong. This board might have been deleted, or the link is invalid.
         </p>
-        <Button asChild className="mt-4 rounded-xl cursor-pointer" variant="outline">
-          <Link to="/login" className="gap-2 font-bold">
-            Go to Login
-          </Link>
-        </Button>
+        <div className="flex gap-2 mt-4">
+          <Button onClick={() => refetch()} variant="outline" className="gap-2 rounded-xl font-bold cursor-pointer">
+            <RefreshCw className="h-4 w-4" />
+            Retry
+          </Button>
+          <Button asChild className="rounded-xl cursor-pointer" variant="outline">
+            <Link to="/login" className="gap-2 font-bold">
+              Go to Login
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -92,6 +100,7 @@ export default function PublicBoardPage() {
   const handleCopyShareLink = () => {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
+    toast('Board link copied to clipboard', 'info');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -160,7 +169,7 @@ export default function PublicBoardPage() {
           <div className={cn("absolute -top-32 -left-32 w-64 h-64 rounded-full blur-3xl opacity-10 bg-gradient-to-br", theme.gradient)} />
           <div className={cn("absolute -bottom-32 -right-32 w-64 h-64 rounded-full blur-3xl opacity-10 bg-gradient-to-br", theme.gradient)} />
 
-          <div className="flex gap-6 overflow-x-auto pb-4 items-start select-none relative z-10 min-h-[480px]">
+          <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 items-start select-none relative z-10 min-h-[480px] snap-x snap-mandatory md:snap-none">
             {COLUMNS.map((col) => (
               <BoardColumn
                 key={col}
