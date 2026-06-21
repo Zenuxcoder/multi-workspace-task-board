@@ -62,11 +62,11 @@ export default function BoardColumn({
       <div className={cn("flex items-center justify-between p-4", cTheme.headerBg)}>
         <div className="flex items-center gap-2.5">
           <span className={cn("h-2.5 w-2.5 rounded-full shadow-xs animate-pulse", cTheme.dot)} />
-          <h3 className={cn("font-bold text-sm", cTheme.text)}>{title}</h3>
-          <Badge variant="outline" className={cn("px-2 py-0.5 text-xs font-semibold rounded-full border-none", 
-            status === 'todo' && 'bg-rose-100/60 text-rose-800',
-            status === 'in-progress' && 'bg-amber-100/60 text-amber-800',
-            status === 'done' && 'bg-emerald-100/60 text-emerald-800',
+          <h3 className={cn("font-extrabold text-[13px] tracking-wide uppercase", cTheme.text)}>{title}</h3>
+          <Badge variant="outline" className={cn("px-2.5 py-0.5 text-[11px] font-bold rounded-full border-none", 
+            status === 'todo' && 'bg-rose-100 text-rose-900',
+            status === 'in-progress' && 'bg-amber-100 text-amber-900',
+            status === 'done' && 'bg-emerald-100 text-emerald-900',
           )}>
             {tasks.length}
           </Badge>
