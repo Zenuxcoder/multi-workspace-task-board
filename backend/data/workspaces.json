@@ -1,0 +1,5 @@
+[
+  { "id": "ws-1", "name": "Personal", "members": ["user-1"] },
+  { "id": "ws-2", "name": "Frontend Team", "members": ["user-1"] },
+  { "id": "ws-3", "name": "Marketing", "members": ["user-1"] }
+]
