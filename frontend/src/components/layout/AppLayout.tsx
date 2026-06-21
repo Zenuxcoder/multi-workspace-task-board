@@ -22,7 +22,7 @@ export default function AppLayout() {
 
   useSocket();
 
-  const { data: workspacesData } = useGetWorkspacesQuery();
+  const { data: workspacesData, isLoading: isWorkspacesLoading } = useGetWorkspacesQuery();
   const workspaces = workspacesData?.workspaces ?? [];
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function AppLayout() {
 
   const activeWorkspaceId = selectedWorkspaceId || workspaces[0]?.id;
   const theme = getWorkspaceTheme(activeWorkspaceId);
-  const { data: boardsData } = useGetBoardsQuery(activeWorkspaceId!, { skip: !activeWorkspaceId });
+  const { data: boardsData, isLoading: isBoardsLoading } = useGetBoardsQuery(activeWorkspaceId!, { skip: !activeWorkspaceId });
   const boards = boardsData?.boards ?? [];
 
   useEffect(() => {
@@ -57,6 +57,7 @@ export default function AppLayout() {
         activeBoardId={boardId}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        isLoading={isBoardsLoading}
       />
       <div className="flex flex-1 flex-col overflow-hidden relative">
         {/* Dynamic ambient gradient background blobs for dashboard layout */}
@@ -118,6 +119,7 @@ export default function AppLayout() {
           onWorkspaceChange={handleWorkspaceChange}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           onToggleActivity={() => setActivityOpen(!activityOpen)}
+          isLoading={isWorkspacesLoading}
         />
         <main className="flex-1 overflow-auto p-4 md:p-6 relative z-10 bg-transparent">
           <Outlet />
