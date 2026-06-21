@@ -1,23 +1,26 @@
-import { NavLink, useParams } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import type { Board } from '@/types';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Kanban, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getWorkspaceTheme } from '@/utils/theme';
 import { useAppSelector } from '@/app/hooks';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SidebarProps {
   boards: Board[];
   activeBoardId?: string;
   open: boolean;
   onClose: () => void;
+  isLoading?: boolean;
 }
 
 type BoardListProps = Omit<SidebarProps, 'open'> & {
   workspaceId: string | null;
+  isLoading?: boolean;
 };
 
-function BoardList({ boards, activeBoardId, onClose, workspaceId }: BoardListProps) {
+function BoardList({ boards, activeBoardId, onClose, workspaceId, isLoading }: BoardListProps) {
   const theme = getWorkspaceTheme(workspaceId);
 
   return (
@@ -28,34 +31,45 @@ function BoardList({ boards, activeBoardId, onClose, workspaceId }: BoardListPro
         </span>
         <Sparkles className={cn("h-3.5 w-3.5 opacity-60 animate-pulse", theme.text)} />
       </div>
-      {boards.map((board) => (
-        <NavLink
-          key={board.id}
-          to={`/board/${board.id}`}
-          onClick={onClose}
-          className={({ isActive }) =>
-            cn(
-              'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-all duration-250',
-              isActive
-                ? `bg-linear-to-r ${theme.gradient} text-white shadow-md ${theme.glow} font-bold border-l-[3px] border-white/40`
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-semibold'
-            )
-          }
-        >
-          <Kanban className="h-4.5 w-4.5" />
-          {board.title}
-        </NavLink>
-      ))}
-      {boards.length === 0 && (
-        <div className="px-3 py-6 text-center border border-dashed rounded-xl bg-slate-50/50 mt-2">
-          <p className="text-xs text-slate-400 font-medium">No boards created yet</p>
+      
+      {isLoading ? (
+        <div className="space-y-2 px-3 pt-1">
+          <Skeleton className="h-9 w-full rounded-xl" />
+          <Skeleton className="h-9 w-full rounded-xl" />
+          <Skeleton className="h-9 w-full rounded-xl" />
         </div>
+      ) : (
+        <>
+          {boards.map((board) => (
+            <NavLink
+              key={board.id}
+              to={`/board/${board.id}`}
+              onClick={onClose}
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-all duration-250',
+                  isActive
+                    ? `bg-linear-to-r ${theme.gradient} text-white shadow-md ${theme.glow} font-bold border-l-[3px] border-white/40`
+                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-semibold'
+                )
+              }
+            >
+              <Kanban className="h-4.5 w-4.5" />
+              {board.title}
+            </NavLink>
+          ))}
+          {boards.length === 0 && (
+            <div className="px-3 py-6 text-center border border-dashed rounded-xl bg-slate-50/50 mt-2">
+              <p className="text-xs text-slate-400 font-medium">No boards available.</p>
+            </div>
+          )}
+        </>
       )}
     </nav>
   );
 }
 
-export default function Sidebar({ boards, activeBoardId, open, onClose }: SidebarProps) {
+export default function Sidebar({ boards, activeBoardId, open, onClose, isLoading }: SidebarProps) {
   const selectedWorkspaceId = useAppSelector((s) => s.workspace.selectedId);
   const theme = getWorkspaceTheme(selectedWorkspaceId);
 
@@ -76,7 +90,7 @@ export default function Sidebar({ boards, activeBoardId, open, onClose }: Sideba
         )} />
 
         <div className="relative z-10 flex flex-col h-full">
-          <BoardList boards={boards} activeBoardId={activeBoardId} onClose={() => {}} workspaceId={selectedWorkspaceId} />
+          <BoardList boards={boards} activeBoardId={activeBoardId} onClose={() => {}} workspaceId={selectedWorkspaceId} isLoading={isLoading} />
         </div>
       </aside>
 
@@ -87,7 +101,7 @@ export default function Sidebar({ boards, activeBoardId, open, onClose }: Sideba
             <SheetTitle className="text-lg font-bold text-slate-800">Navigation</SheetTitle>
           </SheetHeader>
           <div className="pt-4">
-            <BoardList boards={boards} activeBoardId={activeBoardId} onClose={onClose} workspaceId={selectedWorkspaceId} />
+            <BoardList boards={boards} activeBoardId={activeBoardId} onClose={onClose} workspaceId={selectedWorkspaceId} isLoading={isLoading} />
           </div>
         </SheetContent>
       </Sheet>
