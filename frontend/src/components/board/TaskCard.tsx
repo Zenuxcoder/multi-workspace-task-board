@@ -30,6 +30,7 @@ const statusBorders: Record<Task['status'], { leftBorder: string; hoverGlow: str
 };
 
 export default function TaskCard({ task, onEdit, onDelete, isReadOnly = false, isOverlay = false }: TaskCardProps) {
+  const sortableId = isOverlay ? `${task.id}-overlay` : task.id;
   const {
     attributes,
     listeners,
@@ -38,7 +39,7 @@ export default function TaskCard({ task, onEdit, onDelete, isReadOnly = false, i
     transition,
     isDragging,
   } = useSortable({
-    id: task.id,
+    id: sortableId,
     disabled: isReadOnly || isOverlay,
   });
 
@@ -51,7 +52,7 @@ export default function TaskCard({ task, onEdit, onDelete, isReadOnly = false, i
   const borderStyles = statusBorders[task.status] || { leftBorder: 'border-l-slate-300', hoverGlow: '' };
 
   return (
-    <div ref={setNodeRef} style={style} className={cn(
+    <div ref={isOverlay ? undefined : setNodeRef} style={style} className={cn(
       'group outline-none',
       isDragging && 'opacity-30 scale-95 border-dashed border-2 border-slate-300 rounded-xl bg-slate-50/50',
       isOverlay && 'scale-[1.03] rotate-[1.5deg] z-50 cursor-grabbing drop-shadow-xl'
