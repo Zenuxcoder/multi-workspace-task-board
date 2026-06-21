@@ -18,20 +18,23 @@ import {
 } from '@/api/endpoints';
 import BoardColumn from '@/components/board/BoardColumn';
 import TaskDialog from '@/components/tasks/TaskDialog';
+import DeleteConfirmDialog from '@/components/tasks/DeleteConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COLUMNS, STATUS_LABELS, type Task, type TaskStatus } from '@/types';
-import { Share2, Check, Sparkles, KanbanSquare } from 'lucide-react';
+import { Share2, Check, Sparkles, KanbanSquare, RefreshCw, AlertCircle } from 'lucide-react';
 import { getWorkspaceTheme } from '@/utils/theme';
 import { useAppSelector } from '@/app/hooks';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/toast';
 
 export default function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
   const selectedWorkspaceId = useAppSelector((s) => s.workspace.selectedId);
   const theme = getWorkspaceTheme(selectedWorkspaceId);
+  const { toast } = useToast();
 
-  const { data, isLoading, isError } = useGetBoardQuery(boardId!, { skip: !boardId });
+  const { data, isLoading, isError, refetch } = useGetBoardQuery(boardId!, { skip: !boardId });
   const [createTask] = useCreateTaskMutation();
   const [updateTask] = useUpdateTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
@@ -40,6 +43,8 @@ export default function BoardPage() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [targetStatus, setTargetStatus] = useState<TaskStatus>('todo');
   const [copied, setCopied] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -52,7 +57,6 @@ export default function BoardPage() {
     })
   );
 
-  // If no boardId is in route, show placeholder or let layout redirect
   if (!boardId) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] text-center px-4">
@@ -77,9 +81,14 @@ export default function BoardPage() {
         </div>
         <div className="flex-grow p-6 rounded-3xl border border-slate-100 bg-slate-50/20 backdrop-blur-md">
           <div className="flex gap-6 overflow-x-auto pb-4">
-            <Skeleton className="h-[480px] min-w-[340px] rounded-2xl shrink-0" />
-            <Skeleton className="h-[480px] min-w-[340px] rounded-2xl shrink-0" />
-            <Skeleton className="h-[480px] min-w-[340px] rounded-2xl shrink-0" />
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="min-w-[340px] shrink-0 space-y-3.5">
+                <Skeleton className="h-14 w-full rounded-xl" />
+                <Skeleton className="h-20 w-full rounded-xl" />
+                <Skeleton className="h-20 w-full rounded-xl" />
+                <Skeleton className="h-16 w-full rounded-xl opacity-60" />
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -88,9 +97,16 @@ export default function BoardPage() {
 
   if (isError || !data) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] text-center">
-        <h2 className="text-lg font-bold text-rose-600">Error loading board</h2>
-        <p className="text-sm text-slate-400 mt-1">Please try refreshing the page or check your connection.</p>
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] text-center px-4">
+        <div className="h-14 w-14 rounded-2xl bg-rose-50 flex items-center justify-center mb-4">
+          <AlertCircle className="h-7 w-7 text-rose-500" />
+        </div>
+        <h2 className="text-lg font-bold text-slate-800">Unable to load board</h2>
+        <p className="text-sm text-slate-400 mt-1 max-w-xs font-medium">Something went wrong while loading this board. Check your connection and try again.</p>
+        <Button onClick={() => refetch()} variant="outline" className="mt-4 gap-2 rounded-xl font-bold cursor-pointer">
+          <RefreshCw className="h-4 w-4" />
+          Retry
+        </Button>
       </div>
     );
   }
@@ -118,6 +134,7 @@ export default function BoardPage() {
         boardId,
         status: targetStatus,
       }).unwrap();
+      toast(`Task moved to ${STATUS_LABELS[targetStatus]}`, 'info');
     }
   };
 
@@ -132,10 +149,17 @@ export default function BoardPage() {
     setDialogOpen(true);
   };
 
-  const handleDeleteTaskClick = async (id: string) => {
-    if (confirm('Are you sure you want to delete this task?')) {
-      await deleteTask({ id, boardId }).unwrap();
-    }
+  const handleDeleteTaskClick = (id: string) => {
+    const task = tasks.find((t) => t.id === id) || null;
+    setTaskToDelete(task);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!taskToDelete) return;
+    await deleteTask({ id: taskToDelete.id, boardId }).unwrap();
+    toast('Task deleted', 'destructive');
+    setTaskToDelete(null);
   };
 
   const handleDialogSubmit = async (formData: { title: string; description: string; status: TaskStatus }) => {
@@ -147,6 +171,7 @@ export default function BoardPage() {
         description: formData.description,
         status: formData.status,
       }).unwrap();
+      toast('Task updated successfully');
     } else {
       await createTask({
         title: formData.title,
@@ -154,6 +179,7 @@ export default function BoardPage() {
         status: formData.status,
         boardId,
       }).unwrap();
+      toast('Task created successfully');
     }
   };
 
@@ -161,6 +187,7 @@ export default function BoardPage() {
     const shareUrl = `${window.location.origin}/public/board/${boardId}`;
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
+    toast('Board link copied to clipboard', 'info');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -195,7 +222,7 @@ export default function BoardPage() {
       </div>
 
       <div className={cn(
-        "flex-grow p-6 rounded-3xl border transition-all duration-500",
+        "flex-grow p-4 md:p-6 rounded-3xl border transition-all duration-500",
         theme.bgLight || "bg-slate-50/50",
         theme.border || "border-slate-200/60",
         theme.glow || "shadow-xs",
@@ -209,7 +236,7 @@ export default function BoardPage() {
         <div className={cn("absolute -bottom-32 -right-32 w-64 h-64 rounded-full blur-3xl opacity-10 bg-gradient-to-br", theme.gradient)} />
 
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-          <div className="flex gap-6 overflow-x-auto pb-4 items-start select-none relative z-10 min-h-[480px]">
+          <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 items-start select-none relative z-10 min-h-[480px] snap-x snap-mandatory md:snap-none">
             {COLUMNS.map((col) => (
               <BoardColumn
                 key={col}
@@ -231,6 +258,13 @@ export default function BoardPage() {
         onSubmit={handleDialogSubmit}
         task={editingTask}
         defaultStatus={targetStatus}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        taskTitle={taskToDelete?.title}
       />
     </div>
   );
