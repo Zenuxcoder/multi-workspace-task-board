@@ -44,14 +44,20 @@ export default function TaskCard({ task, onEdit, onDelete, isReadOnly = false }:
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    zIndex: isDragging ? 50 : undefined,
   };
 
   const borderStyles = statusBorders[task.status] || { leftBorder: 'border-l-slate-300', hoverGlow: '' };
 
   return (
-    <div ref={setNodeRef} style={style} className={cn('group outline-none', isDragging && 'opacity-40 scale-95 z-50')}>
+    <div ref={setNodeRef} style={style} className={cn(
+      'group outline-none transition-all duration-200',
+      isDragging && 'opacity-80 scale-[1.03] rotate-[1.5deg] z-50'
+    )}>
       <Card className={cn(
-        "relative overflow-hidden border border-slate-200/50 bg-white shadow-xs transition-all duration-300 hover:shadow-md hover:border-slate-300 hover:-translate-y-[2px] active:scale-[0.99] rounded-xl",
+        "relative overflow-hidden border border-slate-200/50 bg-white shadow-xs rounded-xl cursor-grab active:cursor-grabbing",
+        "transition-all duration-200 hover:shadow-md hover:border-slate-300 hover:-translate-y-[3px]",
+        isDragging && 'shadow-xl border-slate-300 ring-2 ring-indigo-200/40',
         borderStyles.leftBorder,
         borderStyles.hoverGlow
       )}>
