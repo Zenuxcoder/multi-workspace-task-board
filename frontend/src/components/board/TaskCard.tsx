@@ -11,6 +11,7 @@ type TaskCardProps = {
   onEdit?: (task: Task) => void;
   onDelete?: (id: string) => void;
   isReadOnly?: boolean;
+  isOverlay?: boolean;
 };
 
 const statusBorders: Record<Task['status'], { leftBorder: string; hoverGlow: string }> = {
@@ -28,7 +29,7 @@ const statusBorders: Record<Task['status'], { leftBorder: string; hoverGlow: str
   },
 };
 
-export default function TaskCard({ task, onEdit, onDelete, isReadOnly = false }: TaskCardProps) {
+export default function TaskCard({ task, onEdit, onDelete, isReadOnly = false, isOverlay = false }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -38,26 +39,28 @@ export default function TaskCard({ task, onEdit, onDelete, isReadOnly = false }:
     isDragging,
   } = useSortable({
     id: task.id,
-    disabled: isReadOnly,
+    disabled: isReadOnly || isOverlay,
   });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 50 : undefined,
+    zIndex: isDragging ? 10 : undefined,
   };
 
   const borderStyles = statusBorders[task.status] || { leftBorder: 'border-l-slate-300', hoverGlow: '' };
 
   return (
     <div ref={setNodeRef} style={style} className={cn(
-      'group outline-none transition-all duration-200',
-      isDragging && 'opacity-80 scale-[1.03] rotate-[1.5deg] z-50'
+      'group outline-none',
+      isDragging && 'opacity-30 scale-95 border-dashed border-2 border-slate-300 rounded-xl bg-slate-50/50',
+      isOverlay && 'scale-[1.03] rotate-[1.5deg] z-50 cursor-grabbing drop-shadow-xl'
     )}>
       <Card className={cn(
         "relative overflow-hidden border border-slate-200/50 bg-white shadow-xs rounded-xl cursor-grab active:cursor-grabbing",
-        "transition-all duration-200 hover:shadow-md hover:border-slate-300 hover:-translate-y-[3px]",
-        isDragging && 'shadow-xl border-slate-300 ring-2 ring-indigo-200/40',
+        "transition-[box-shadow,border-color,transform] duration-200",
+        !isDragging && !isOverlay && "hover:shadow-md hover:border-slate-300 hover:-translate-y-[3px]",
+        (isDragging || isOverlay) && 'border-slate-300 ring-2 ring-indigo-200/40',
         borderStyles.leftBorder,
         borderStyles.hoverGlow
       )}>
