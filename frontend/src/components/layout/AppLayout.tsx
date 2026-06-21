@@ -10,6 +10,7 @@ import ActivityPanel from './ActivityPanel';
 import { Circle, Square, Triangle, Hexagon } from 'lucide-react';
 import { getWorkspaceTheme } from '@/utils/theme';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/toast';
 
 export default function AppLayout() {
   const dispatch = useAppDispatch();
@@ -41,8 +42,12 @@ export default function AppLayout() {
     }
   }, [boards, boardId, navigate]);
 
+  const { toast } = useToast();
+
   const handleWorkspaceChange = (id: string) => {
     dispatch(setWorkspace(id));
+    const ws = workspaces.find((w) => w.id === id);
+    if (ws) toast(`Switched to ${ws.name}`, 'info');
   };
 
   return (
