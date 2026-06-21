@@ -106,18 +106,8 @@ export default function BoardColumn({
         {tasks.length === 0 && (
           <div className="flex flex-col items-center justify-center h-36 border-2 border-dashed border-slate-200/50 rounded-xl text-center p-5 bg-slate-50/30">
             <p className="text-xs text-slate-400 font-semibold leading-normal">
-              No tasks here yet
+              {isReadOnly ? "No tasks yet." : "No tasks yet. Click + to create one."}
             </p>
-            {!isReadOnly && onAddTask && (
-              <Button 
-                variant="link" 
-                size="sm" 
-                onClick={() => onAddTask(status)} 
-                className="text-xs text-indigo-500 hover:text-indigo-600 font-semibold p-0 h-auto mt-1 cursor-pointer"
-              >
-                Create task
-              </Button>
-            )}
           </div>
         )}
       </div>
