@@ -3,7 +3,7 @@ import type { RootState } from '@/app/store';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:3001',
+    baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:3001',
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.token;
       if (token) headers.set('Authorization', `Bearer ${token}`);
