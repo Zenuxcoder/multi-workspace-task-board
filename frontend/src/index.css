@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: oklch(0.99 0.005 240);
+  --color-foreground: oklch(0.2 0.02 240);
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.2 0.02 240);
+  --color-popover: oklch(1 0 0);
+  --color-popover-foreground: oklch(0.2 0.02 240);
+  --color-primary: oklch(0.55 0.22 260); /* Vibrant Indigo */
+  --color-primary-foreground: oklch(0.985 0 0);
+  --color-secondary: oklch(0.96 0.015 240);
+  --color-secondary-foreground: oklch(0.2 0.02 240);
+  --color-muted: oklch(0.95 0.015 240);
+  --color-muted-foreground: oklch(0.45 0.03 240);
+  --color-accent: oklch(0.92 0.03 260);
+  --color-accent-foreground: oklch(0.25 0.15 260);
+  --color-destructive: oklch(0.6 0.22 25);
+  --color-destructive-foreground: oklch(0.985 0 0);
+  --color-border: oklch(0.92 0.015 240);
+  --color-input: oklch(0.92 0.015 240);
+  --color-ring: oklch(0.65 0.2 260);
+  --radius: 0.75rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-linear-to-br from-indigo-50/40 via-purple-50/20 to-pink-50/40 text-foreground;
+    font-family: "Outfit", "Inter", system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Premium scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(0.85 0.03 260 / 0.5);
+  border-radius: 9999px;
+  transition: all 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.7 0.1 260 / 0.7);
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Glowing text effects */
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glow-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glow-hover:hover {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Floating Animations */
+@keyframes floatUp {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-65px) rotate(12deg) scale(1.08);
+  }
+}
+
+@keyframes floatDown {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(65px) rotate(-12deg) scale(0.92);
+  }
+}
+
+@keyframes floatDiagonal {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(45px, -45px) rotate(20deg) scale(1.06);
+  }
+}
+
+.animate-float-up {
+  animation: floatUp 4.2s ease-in-out infinite;
+}
+
+.animate-float-down {
+  animation: floatDown 5.2s ease-in-out infinite;
+}
+
+.animate-float-diagonal {
+  animation: floatDiagonal 6.2s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin 16s linear infinite;
+}
+
+@keyframes gradientSweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-sweep {
+  background-size: 200% 200%;
+  animation: gradientSweep 10s ease-in-out infinite;
+}
+
+@keyframes horizontalSweep {
+  0% {
+    transform: translate(-400px, 0);
+  }
+  25% {
+    transform: translate(50vw, 50px);
+  }
+  50% {
+    transform: translate(100vw, 0);
+  }
+  75% {
+    transform: translate(50vw, -50px);
+  }
+  100% {
+    transform: translate(-400px, 0);
+  }
+}
+
+.animate-horizontal-sweep {
+  animation: horizontalSweep 18s ease-in-out infinite;
+}
+
+
+
+
