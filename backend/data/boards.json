@@ -1,0 +1,6 @@
+[
+  { "id": "board-1", "title": "My Tasks", "workspaceId": "ws-1" },
+  { "id": "board-2", "title": "Sprint Board", "workspaceId": "ws-2" },
+  { "id": "board-3", "title": "Bug Tracker", "workspaceId": "ws-2" },
+  { "id": "board-4", "title": "Campaign Tracker", "workspaceId": "ws-3" }
+]
