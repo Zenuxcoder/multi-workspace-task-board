@@ -1,0 +1,154 @@
+[
+  {
+    "id": "task-1",
+    "title": "Review PR #42",
+    "description": "Review the pull request for the new feature branch",
+    "status": "todo",
+    "boardId": "board-1",
+    "position": 0
+  },
+  {
+    "id": "task-2",
+    "title": "Grocery shopping list",
+    "description": "Milk, eggs, bread, coffee beans",
+    "status": "todo",
+    "boardId": "board-1",
+    "position": 1
+  },
+  {
+    "id": "task-3",
+    "title": "Update portfolio site",
+    "description": "Add recent projects and update bio section",
+    "status": "in-progress",
+    "boardId": "board-1",
+    "position": 0
+  },
+  {
+    "id": "task-4",
+    "title": "Fix login bug",
+    "description": "Users getting logged out after page refresh",
+    "status": "done",
+    "boardId": "board-1",
+    "position": 0
+  },
+  {
+    "id": "task-5",
+    "title": "Setup dev environment",
+    "description": "Install Node, VS Code extensions, configure ESLint",
+    "status": "done",
+    "boardId": "board-1",
+    "position": 1
+  },
+  {
+    "id": "task-6",
+    "title": "Setup CI pipeline",
+    "description": "Configure GitHub Actions for automated testing",
+    "status": "todo",
+    "boardId": "board-2",
+    "position": 0
+  },
+  {
+    "id": "task-7",
+    "title": "Write unit tests",
+    "description": "Add tests for auth module and API endpoints",
+    "status": "todo",
+    "boardId": "board-2",
+    "position": 1
+  },
+  {
+    "id": "task-8",
+    "title": "Code review guidelines",
+    "description": "Document team code review process and standards",
+    "status": "todo",
+    "boardId": "board-2",
+    "position": 2
+  },
+  {
+    "id": "task-9",
+    "title": "Implement auth flow",
+    "description": "JWT-based authentication with refresh tokens",
+    "status": "in-progress",
+    "boardId": "board-2",
+    "position": 0
+  },
+  {
+    "id": "task-10",
+    "title": "Design system tokens",
+    "description": "Define color palette, spacing, and typography scales",
+    "status": "in-progress",
+    "boardId": "board-2",
+    "position": 1
+  },
+  {
+    "id": "task-11",
+    "title": "Project scaffolding",
+    "description": "Initial Vite + React + TypeScript project setup",
+    "status": "done",
+    "boardId": "board-2",
+    "position": 0
+  },
+  {
+    "id": "task-12",
+    "title": "Fix sidebar overflow",
+    "description": "Sidebar content overflows on smaller screens",
+    "status": "todo",
+    "boardId": "board-3",
+    "position": 0
+  },
+  {
+    "id": "task-13",
+    "title": "Button hover state",
+    "description": "Primary button hover state not matching design spec",
+    "status": "in-progress",
+    "boardId": "board-3",
+    "position": 0
+  },
+  {
+    "id": "task-14",
+    "title": "Modal accessibility",
+    "description": "Add proper ARIA labels and keyboard navigation to modals",
+    "status": "done",
+    "boardId": "board-3",
+    "position": 0
+  },
+  {
+    "id": "task-15",
+    "title": "Design landing page",
+    "description": "Create mockups for the new product landing page",
+    "status": "todo",
+    "boardId": "board-4",
+    "position": 0
+  },
+  {
+    "id": "task-16",
+    "title": "SEO audit",
+    "description": "Run full SEO audit and fix critical issues",
+    "status": "todo",
+    "boardId": "board-4",
+    "position": 1
+  },
+  {
+    "id": "task-17",
+    "title": "Social media calendar",
+    "description": "Plan next month's social media content schedule",
+    "status": "in-progress",
+    "boardId": "board-4",
+    "position": 0
+  },
+  {
+    "id": "task-18",
+    "title": "Write blog post",
+    "description": "Monthly product update blog post for June",
+    "status": "done",
+    "boardId": "board-4",
+    "position": 0
+  },
+  {
+    "id": "task-19",
+    "title": "Email newsletter",
+    "description": "Draft and send the Q2 newsletter to subscribers",
+    "status": "done",
+    "boardId": "board-4",
+    "position": 1
+  }
+]
